@@ -2,4 +2,5 @@
 TOP=blinky
 SRCS=blinky.v
 
-include ../hx8k.mk
+ICESUITE_HOME=$(shell git rev-parse --show-toplevel)
+include ${ICESUITE_HOME}/boards/hx8k_breakout/hx8k_breakout.mk
