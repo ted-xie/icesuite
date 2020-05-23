@@ -1,0 +1,6 @@
+*.pnr.v
+*.timing.v
+*.asc
+*.blif
+*.swp
+*.bit
