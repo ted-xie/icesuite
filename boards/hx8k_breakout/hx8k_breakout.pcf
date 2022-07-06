@@ -2,4 +2,12 @@ set_io clk  J3
 set_io led0 B5
 set_io led1 B4
 set_io led2 A2
-
+set_io led3 A1
+set_io led4 C5
+set_io led5 C4
+set_io led6 B3
+set_io led7 C3
+set_io uart0_cts K14
+set_io uart0_txd J15
+set_io uart0_rxd K16
+set_io uart0_rts J14
