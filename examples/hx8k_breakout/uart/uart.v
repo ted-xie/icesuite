@@ -33,12 +33,14 @@ module uart #(
   generate
     for (sync_i = 0; sync_i < SYNC_STAGES; sync_i = sync_i + 1) begin
       // FIXME Currently throws a lint violation due to selection index.
-      always @(posedge ice_clk) begin
-        if (sync_i == 0) begin
+      if (sync_i == 0) begin
+        always @(posedge ice_clk) begin
           // Flop index 0 is the raw input signal.
           uart0_cts_sync_regs[sync_i] <= uart0_cts;
           uart0_rxd_sync_regs[sync_i] <= uart0_rxd;
-        end else begin
+        end
+      end else begin
+        always @(posedge ice_clk) begin
           uart0_cts_sync_regs[sync_i] <= uart0_cts_sync_regs[sync_i-1];
           uart0_rxd_sync_regs[sync_i] <= uart0_rxd_sync_regs[sync_i-1];
         end
