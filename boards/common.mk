@@ -3,6 +3,12 @@ ASC=${TOP}.asc
 BIT=${TOP}.bit
 PNR_NET=${TOP}.pnr.v
 TIME_NET=${TOP}.timing.v
+LINT=${TOP}.verilator.lint.rpt
+
+${LINT}: ${SRCS}
+	verilator --lint-only ${SRCS} 2>&1 | tee $@
+
+lint: ${LINT}
 
 ${BLIF}: ${SRCS}
 	yosys -p 'synth_ice40 -top ${TOP} -blif ${BLIF}' ${SRCS}
