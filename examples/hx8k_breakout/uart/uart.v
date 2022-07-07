@@ -2,7 +2,11 @@
 module uart #(
   parameter UART_DATA_BITS=8,
   parameter PARITY_BITS=0,
-  parameter STOP_BITS=1
+  parameter STOP_BITS=1,
+  parameter BAUD_RATE_BPS = 9600, // bits per second
+  parameter BAUD_RATE_COUNT = 12_000_000 / BAUD_RATE_BPS,
+  parameter FRAME_SIZE = 1 /* start */ + UART_DATA_BITS /* data */ +
+                          PARITY_BITS /* parity */ + STOP_BITS /* stop */
 ) (
   input wire clk,
   output wire led0,
@@ -18,10 +22,6 @@ module uart #(
   input wire uart0_rxd,
   output wire uart0_rts
 );
-  localparam BAUD_RATE_BPS = 9600; // bits per second
-  localparam BAUD_RATE_COUNT = 12_000_000 / BAUD_RATE_BPS;
-  localparam FRAME_SIZE = 1 /* start */ + UART_DATA_BITS /* data */ +
-                          PARITY_BITS /* parity */ + STOP_BITS /* stop */;
   localparam FRAME_IDX_BITS = $clog2(FRAME_SIZE);
   localparam RESET_CYCLES = 100;
   localparam SYNC_STAGES = 3;
