@@ -30,9 +30,11 @@ module uart #(
   reg [31:0] counter_baud = 'h0;
   reg [15:0] counter_freerunning = 'h0;
   // Resettable flops
+  reg err_sof; // error in start-of-frame
+  reg err_eof; // error in end-of-frame
   reg uart0_txd_r;
   reg uart0_rts_r;
-  reg [FRAME_SIZE:0] uart0_rx_frame;
+  reg [FRAME_SIZE-1:0] uart0_rx_frame;
   reg [FRAME_IDX_BITS-1:0] uart0_rx_idx;
   // Nonresettable flops
   reg [SYNC_STAGES-1:0] uart0_cts_sync_regs;
@@ -93,9 +95,21 @@ module uart #(
     if (~resetn) begin
       uart0_rx_frame <= 'h0;
       uart0_rx_idx <= 'h0;
+      err_sof <= 1'b0;
+      err_eof <= 1'b0;
     end else begin
       if (uart0_cts_sync == 1'b0 && counter_baud == 32'h0) begin
-        uart0_rx_frame[uart0_rx_idx] <= uart0_rxd_sync;
+        uart0_rx_frame[FRAME_SIZE-1-uart0_rx_idx] <= uart0_rxd_sync;
+
+        // Protocol error detection.
+        if (uart0_rx_idx == 1'b0 && uart0_rxd_sync != 1'b1) begin
+          err_sof <= 1'b1;
+        end
+        if (uart0_rx_idx == FRAME_SIZE-1 && uart0_rxd_sync != 1'b1) begin
+          err_eof <= 1'b1;
+        end
+
+        // Update the rx_idx
         if (uart0_rx_idx < FRAME_SIZE-1) begin
           uart0_rx_idx <= uart0_rx_idx + 1'b1;
         end else begin
