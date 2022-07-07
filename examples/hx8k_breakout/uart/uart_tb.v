@@ -13,7 +13,7 @@ module uart_tb #(
   parameter STOP_BITS=1,
   // NOTE: This baud rate is unrealistically high for the sake of making the
   // testbench run faster.
-  parameter BAUD_RATE_BPS = 6_000_000, // bits per second
+  parameter BAUD_RATE_BPS = 3_000_000, // bits per second
   parameter BAUD_RATE_COUNT = 12_000_000 / BAUD_RATE_BPS,
   parameter FRAME_SIZE = 1 /* start */ + UART_DATA_BITS /* data */ +
                           PARITY_BITS /* parity */ + STOP_BITS /* stop */
