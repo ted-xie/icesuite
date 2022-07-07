@@ -44,7 +44,7 @@ module uart #(
   wire uart0_rxd_sync = uart0_rxd_sync_regs[SYNC_STAGES-1];
   assign uart0_txd = uart0_txd_r;
   assign uart0_rts = uart0_rts_r;
-  assign {led7, led6, led5,led4,led3,led2,led1,led0} = uart0_rx_frame[FRAME_SIZE-STOP_BITS-PARITY_BITS-1:1];
+  assign {led7, led6, led5,led4,led3,led2,led1,led0} = uart0_rx_frame[1 +: UART_DATA_BITS];
 
   // Freerunning counter used to generate the reset.
   always @(posedge clk) begin
@@ -72,13 +72,13 @@ module uart #(
   endgenerate
 
   // Generates the control signal to sample the data
+  wire [31:0] next_counter_baud = ((counter_baud + 1'b1) == BAUD_RATE_COUNT) ? 32'h0 : (counter_baud + 1'b1);
   always @(posedge clk) begin
-    // No reset for counter_baud - it is set to 0 during bitfile programming
-    // (see its initial assignment above).
-    if (counter_baud == (BAUD_RATE_COUNT/2 - 1))
+    if (~resetn) begin
       counter_baud <= 32'h0;
-    else
-      counter_baud <= counter_baud + 1'b1;
+    end else begin
+      counter_baud <= next_counter_baud;
+    end
   end
 
   always @(posedge clk) begin
@@ -94,7 +94,7 @@ module uart #(
       uart0_rx_frame <= 'h0;
       uart0_rx_idx <= 'h0;
     end else begin
-      if (uart0_cts_sync == 1'b0) begin
+      if (uart0_cts_sync == 1'b0 && counter_baud == 32'h0) begin
         uart0_rx_frame[uart0_rx_idx] <= uart0_rxd_sync;
         if (uart0_rx_idx < FRAME_SIZE-1) begin
           uart0_rx_idx <= uart0_rx_idx + 1'b1;
