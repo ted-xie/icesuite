@@ -21,7 +21,7 @@ module uart_tb #(
   // 12 MHz clock
   localparam CLK_PERIOD = 83.3333;
   localparam UART_CLK_PERIOD = 1.0 / (BAUD_RATE_BPS) * 1_000_000_000; 
-  localparam NUM_TEST_FRAMES = 10;
+  localparam NUM_TEST_FRAMES = 2;
   reg [FRAME_SIZE-1:0] test_frames [0:NUM_TEST_FRAMES-1];
 
   reg clk = 1'b0;
@@ -85,7 +85,18 @@ module uart_tb #(
     // Generate a bunch of test data
     for (int i = 0; i < NUM_TEST_FRAMES; i = i + 1) begin
       test_frames[i][0] = 1'b1; // Start bit always 1
-      test_frames[i][1 +: UART_DATA_BITS] = $random() & {UART_DATA_BITS{1'b1}};
+      if (i == '0) begin
+        // Test 0: 0xaa
+        test_frames[i][1 +: UART_DATA_BITS] = 8'haa;
+      end else if (i == 1) begin
+        // Test 1: all 0's
+        test_frames[i][1 +: UART_DATA_BITS] = 8'h00;
+      end else if (i == 2) begin
+        // Test 2: all 1's
+        test_frames[i][1 +: UART_DATA_BITS] = 8'h11;
+      end else begin
+        test_frames[i][1 +: UART_DATA_BITS] = $random() & {UART_DATA_BITS{1'b1}};
+      end
       if (PARITY_BITS > 0) begin
         test_frames[i][1+UART_DATA_BITS +: PARITY_BITS] = {PARITY_BITS{1'b0}};
       end
@@ -110,8 +121,10 @@ module uart_tb #(
       // correct.
       repeat (10) @(posedge clk);
       if (led != test_frames[i][8:1]) begin
-        $error("Frame %d: Expected %x, got %x", i, test_frames[i][8:1], led);
+        $error("[ERROR] Frame %d: Expected %x, got %x", i, test_frames[i][8:1], led);
         //$finish;
+      end else begin
+        $display("[INFO] Frame %d: data comparison OK!", i);
       end
     end
     // Deassert CTS
